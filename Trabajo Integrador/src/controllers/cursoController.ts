@@ -1,8 +1,13 @@
 import { Request, Response } from 'express';
+import { AppDataSource } from '../bd/conexion';
+import {Curso} from '../models/CursoModel';
+
+const cursoRepository = AppDataSource.getRepository(Curso);
 
 export const consultarTodos = async (req:Request, res:Response) =>{
 	try{
-		res.json('Consulta curso');
+		const cursos = await cursoRepository.find();
+		res.json(cursos);;
 	} catch (err: unknown) {
 		if (err instanceof Error){
 			res.status(500).send(err.message);
@@ -12,7 +17,8 @@ export const consultarTodos = async (req:Request, res:Response) =>{
 
 export const consultarUno = async (req:Request, res:Response) =>{
 	try{
-		res.json('Consulta un curso');
+		const curso = await cursoRepository.findOneBy({id: parseInt(req.params.id)});
+		res.json(curso);
 	} catch (err: unknown) {
 		if (err instanceof Error){
 			res.status(500).send(err.message);
@@ -22,7 +28,9 @@ export const consultarUno = async (req:Request, res:Response) =>{
 
 export const insertar = async (req:Request, res:Response) =>{
 	try{
-		res.json('inserta curso');
+		const curso = cursoRepository.create(req.body);
+		const result = await cursoRepository.save(curso); 
+		res.json(result);
 	} catch (err: unknown) {
 		if (err instanceof Error){
 			res.status(500).send(err.message);
@@ -32,7 +40,12 @@ export const insertar = async (req:Request, res:Response) =>{
 
 export const modificar = async (req:Request, res:Response) =>{
 	try{
-		res.json('modifica curso');
+		const curso = await cursoRepository.findOneBy({id: parseInt(req.params.id)});
+		if(!curso)
+			return res.status(400).json({mens:"Estudiante no encontrado"});
+		cursoRepository.merge(curso, req.body);
+		const result=await cursoRepository.save(curso); 
+		res.json(result);
 	} catch (err: unknown) {
 		if (err instanceof Error){
 			res.status(500).send(err.message);
@@ -42,7 +55,8 @@ export const modificar = async (req:Request, res:Response) =>{
 
 export const eliminar = async (req:Request, res:Response) =>{
 	try{
-		res.json('elimina curso');
+		const result = await cursoRepository.delete(req.params.id);
+		res.json(result);
 	} catch (err: unknown) {
 		if (err instanceof Error){
 			res.status(500).send(err.message);
