@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calificar = exports.cancelarInscripcion = exports.inscribir = exports.consultarxCurso = exports.consultarxAlumno = exports.consultarInscripciones = void 0;
-const conexion_1 = require("../bd/conexion");
+const conexion_1 = require("../db/conexion");
 const CursoEstudianteModel_1 = require("../models/CursoEstudianteModel");
 const inscripcionRepository = conexion_1.AppDataSource.getRepository(CursoEstudianteModel_1.CursoEstudiante);
 const consultarInscripciones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

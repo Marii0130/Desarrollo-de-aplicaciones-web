@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.eliminar = exports.modificar = exports.insertar = exports.consultarUno = exports.consultarTodos = void 0;
-const conexion_1 = require("../bd/conexion");
+const conexion_1 = require("../db/conexion");
 const ProfesorModel_1 = require("../models/ProfesorModel");
 const profesorRepository = conexion_1.AppDataSource.getRepository(ProfesorModel_1.Profesor);
 const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

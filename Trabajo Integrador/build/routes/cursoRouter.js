@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const router = express_1.default.Router();
-//import  cursoController  from '../controllers/cursoController';
 const cursoController_1 = require("../controllers/cursoController");
 router.get('/', cursoController_1.consultarTodos);
 router.post('/', cursoController_1.insertar);

@@ -9,14 +9,41 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.eliminar = exports.modificar = exports.insertar = exports.consultarUno = exports.consultarTodos = void 0;
-const conexion_1 = require("../bd/conexion");
+exports.eliminar = exports.modificar = exports.insertar = exports.consultarUno = exports.consultarTodos = exports.validar = void 0;
+const express_validator_1 = require("express-validator");
+const conexion_1 = require("../db/conexion");
 const EstudianteModel_1 = require("../models/EstudianteModel");
-const estudianteRepository = conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante);
+const CursoEstudianteModel_1 = require("../models/CursoEstudianteModel");
+var estudiantes;
+const validar = () => [
+    (0, express_validator_1.check)('dni')
+        .notEmpty().withMessage('El DNI es obligatorio')
+        .isLength({ min: 7 }).withMessage('El DNI debe tener al menos 7 caracteres'),
+    (0, express_validator_1.check)('nombre').notEmpty().withMessage('El nombre es obligatorio')
+        .isLength({ min: 3 }).withMessage('El Nombre debe tener al menos 3 caracteres'),
+    (0, express_validator_1.check)('apellido').notEmpty().withMessage('El apellido es obligatorio')
+        .isLength({ min: 3 }).withMessage('El Apellido debe tener al menos 3 caracteres'),
+    (0, express_validator_1.check)('email').isEmail().withMessage('Debe proporcionar un email válido'),
+    (req, res, next) => {
+        const errores = (0, express_validator_1.validationResult)(req);
+        if (!errores.isEmpty()) {
+            return res.render('creaEstudiantes', {
+                pagina: 'Crear Estudiante',
+                errores: errores.array()
+            });
+        }
+        next();
+    }
+];
+exports.validar = validar;
 const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const estudianteRepository = conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante);
         const estudiantes = yield estudianteRepository.find();
-        res.json(estudiantes);
+        res.render('listarEstudiantes', {
+            pagina: 'Lista de Estudiantes',
+            estudiantes
+        });
     }
     catch (err) {
         if (err instanceof Error) {
@@ -26,22 +53,60 @@ const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function*
 });
 exports.consultarTodos = consultarTodos;
 const consultarUno = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const idNumber = Number(id);
+    if (isNaN(idNumber)) {
+        throw new Error('ID inválido, debe ser un número');
+    }
     try {
-        const estudiante = yield estudianteRepository.findOneBy({ id: parseInt(req.params.id) });
-        res.json(estudiante);
+        const estudianteRepository = conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante);
+        const estudiante = yield estudianteRepository.findOne({ where: { id: idNumber } });
+        if (estudiante) {
+            return estudiante;
+        }
+        else {
+            return null;
+        }
     }
     catch (err) {
         if (err instanceof Error) {
-            res.status(500).send(err.message);
+            throw err;
+        }
+        else {
+            throw new Error('Error desconocido');
         }
     }
 });
 exports.consultarUno = consultarUno;
 const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const errores = (0, express_validator_1.validationResult)(req);
+    if (!errores.isEmpty()) {
+        return res.render('cargaEstudiantes', {
+            pagina: 'Crear Estudiante',
+            errores: errores.array()
+        });
+    }
+    const { dni, nombre, apellido, email } = req.body;
     try {
-        const estudiante = estudianteRepository.create(req.body);
-        const result = yield estudianteRepository.save(estudiante);
-        res.json(result);
+        yield conexion_1.AppDataSource.transaction((transactionalEntityManager) => __awaiter(void 0, void 0, void 0, function* () {
+            const estudianteRepository = transactionalEntityManager.getRepository(EstudianteModel_1.Estudiante);
+            const existeEstudiante = yield estudianteRepository.findOne({
+                where: [
+                    { dni },
+                    { email }
+                ]
+            });
+            if (existeEstudiante) {
+                throw new Error('El estudiante ya existe.');
+            }
+            const nuevoEstudiante = estudianteRepository.create({ dni, nombre, apellido, email });
+            yield estudianteRepository.save(nuevoEstudiante);
+        }));
+        const estudiantes = yield conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante).find();
+        res.render('listarEstudiantes', {
+            pagina: 'Lista de Estudiantes',
+            estudiantes
+        });
     }
     catch (err) {
         if (err instanceof Error) {
@@ -51,29 +116,50 @@ const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.insertar = insertar;
 const modificar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const { dni, nombre, apellido, email } = req.body;
     try {
-        const estudiante = yield estudianteRepository.findOneBy({ id: parseInt(req.params.id) });
-        if (!estudiante)
-            return res.status(400).json({ mens: "Estudiante no encontrado" });
-        estudianteRepository.merge(estudiante, req.body);
-        const result = yield estudianteRepository.save(estudiante);
-        res.json(result);
-    }
-    catch (err) {
-        if (err instanceof Error) {
-            res.status(500).send(err.message);
+        const estudianteRepository = conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante);
+        const estudiante = yield estudianteRepository.findOne({ where: { id: parseInt(id) } });
+        if (!estudiante) {
+            return res.status(404).send('Estudiante no encontrado');
         }
+        estudianteRepository.merge(estudiante, { dni, nombre, apellido, email });
+        yield estudianteRepository.save(estudiante);
+        return res.redirect('/estudiantes/listarEstudiantes');
+    }
+    catch (error) {
+        console.error('Error al modificar el estudiante:', error);
+        res.status(500).send('Error del servidor');
     }
 });
 exports.modificar = modificar;
 const eliminar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
     try {
-        const result = yield estudianteRepository.delete(req.params.id);
-        res.json(result);
+        //console.log(`ID recibido para eliminar: ${id}`); 
+        yield conexion_1.AppDataSource.transaction((transactionalEntityManager) => __awaiter(void 0, void 0, void 0, function* () {
+            const cursosEstudiantesRepository = transactionalEntityManager.getRepository(CursoEstudianteModel_1.CursoEstudiante);
+            const estudianteRepository = transactionalEntityManager.getRepository(EstudianteModel_1.Estudiante);
+            const cursosRelacionados = yield cursosEstudiantesRepository.count({ where: { estudiante: { id: Number(id) } } });
+            if (cursosRelacionados > 0) {
+                throw new Error('Estudiante cursando materias, no se puede eliminar');
+            }
+            const deleteResult = yield estudianteRepository.delete(id);
+            if (deleteResult.affected === 1) {
+                return res.json({ mensaje: 'Estudiante eliminado' });
+            }
+            else {
+                throw new Error('Estudiante no encontrado');
+            }
+        }));
     }
     catch (err) {
         if (err instanceof Error) {
-            res.status(500).send(err.message);
+            res.status(400).json({ mensaje: err.message });
+        }
+        else {
+            res.status(400).json({ mensaje: 'Error' });
         }
     }
 });
