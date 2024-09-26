@@ -29,7 +29,7 @@ export const AppDataSource=new DataSource({
 	logging:true
 });
 
-export async function initializeDataBase(){
+export async function initializeDatabase(){
 	await createDatabaseIfNotExists();
 	await AppDataSource.initialize();
 }

@@ -1,6 +1,5 @@
 import express from 'express';
 const router = express.Router();
-//import { inscripcionController } from '../controllers/inscripcionController';
 import { calificar, cancelarInscripcion, consultarInscripciones, consultarxAlumno, consultarxCurso, inscribir } from '../controllers/inscripcionController';
 
 router.get('/',consultarInscripciones);

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AppDataSource } from '../bd/conexion';
+import { AppDataSource } from '../db/conexion';
 import {CursoEstudiante} from '../models/CursoEstudianteModel';
 
 const inscripcionRepository = AppDataSource.getRepository(CursoEstudiante);

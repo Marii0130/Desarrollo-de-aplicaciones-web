@@ -10,9 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.eliminar = exports.modificar = exports.insertar = exports.consultarUno = exports.consultarTodos = void 0;
+const conexion_1 = require("../bd/conexion");
+const ProfesorModel_1 = require("../models/ProfesorModel");
+const profesorRepository = conexion_1.AppDataSource.getRepository(ProfesorModel_1.Profesor);
 const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('Consulta prof');
+        const profesores = yield profesorRepository.find();
+        res.json(profesores);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -23,7 +27,8 @@ const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.consultarTodos = consultarTodos;
 const consultarUno = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('Consulta un prof');
+        const profesor = yield profesorRepository.findOneBy({ id: parseInt(req.params.id) });
+        res.json(profesor);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -34,7 +39,9 @@ const consultarUno = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.consultarUno = consultarUno;
 const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('inserta prof');
+        const profesor = profesorRepository.create(req.body);
+        const result = yield profesorRepository.save(profesor);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -45,7 +52,12 @@ const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.insertar = insertar;
 const modificar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('modifica prof');
+        const profesor = yield profesorRepository.findOneBy({ id: parseInt(req.params.id) });
+        if (!profesor)
+            return res.status(400).json({ mens: "Profesor no encontrado" });
+        profesorRepository.merge(profesor, req.body);
+        const result = yield profesorRepository.save(profesor);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -56,7 +68,8 @@ const modificar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.modificar = modificar;
 const eliminar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('elimina prof');
+        const result = yield profesorRepository.delete(req.params.id);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {

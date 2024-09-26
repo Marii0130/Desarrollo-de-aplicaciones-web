@@ -10,9 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.eliminar = exports.modificar = exports.insertar = exports.consultarUno = exports.consultarTodos = void 0;
+const conexion_1 = require("../bd/conexion");
+const EstudianteModel_1 = require("../models/EstudianteModel");
+const estudianteRepository = conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante);
 const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('Consulta estud');
+        const estudiantes = yield estudianteRepository.find();
+        res.json(estudiantes);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -23,7 +27,8 @@ const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.consultarTodos = consultarTodos;
 const consultarUno = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('Consulta un estud');
+        const estudiante = yield estudianteRepository.findOneBy({ id: parseInt(req.params.id) });
+        res.json(estudiante);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -34,7 +39,9 @@ const consultarUno = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.consultarUno = consultarUno;
 const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('inserta estud');
+        const estudiante = estudianteRepository.create(req.body);
+        const result = yield estudianteRepository.save(estudiante);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -45,7 +52,12 @@ const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.insertar = insertar;
 const modificar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('modifica estud');
+        const estudiante = yield estudianteRepository.findOneBy({ id: parseInt(req.params.id) });
+        if (!estudiante)
+            return res.status(400).json({ mens: "Estudiante no encontrado" });
+        estudianteRepository.merge(estudiante, req.body);
+        const result = yield estudianteRepository.save(estudiante);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -56,7 +68,8 @@ const modificar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.modificar = modificar;
 const eliminar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('elimina estud');
+        const result = yield estudianteRepository.delete(req.params.id);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {

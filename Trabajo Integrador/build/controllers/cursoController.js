@@ -10,9 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.eliminar = exports.modificar = exports.insertar = exports.consultarUno = exports.consultarTodos = void 0;
+const conexion_1 = require("../bd/conexion");
+const CursoModel_1 = require("../models/CursoModel");
+const cursoRepository = conexion_1.AppDataSource.getRepository(CursoModel_1.Curso);
 const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('Consulta curso');
+        const cursos = yield cursoRepository.find();
+        res.json(cursos);
+        ;
     }
     catch (err) {
         if (err instanceof Error) {
@@ -23,7 +28,8 @@ const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.consultarTodos = consultarTodos;
 const consultarUno = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('Consulta un curso');
+        const curso = yield cursoRepository.findOneBy({ id: parseInt(req.params.id) });
+        res.json(curso);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -34,7 +40,9 @@ const consultarUno = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.consultarUno = consultarUno;
 const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('inserta curso');
+        const curso = cursoRepository.create(req.body);
+        const result = yield cursoRepository.save(curso);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -45,7 +53,12 @@ const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.insertar = insertar;
 const modificar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('modifica curso');
+        const curso = yield cursoRepository.findOneBy({ id: parseInt(req.params.id) });
+        if (!curso)
+            return res.status(400).json({ mens: "Estudiante no encontrado" });
+        cursoRepository.merge(curso, req.body);
+        const result = yield cursoRepository.save(curso);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -56,7 +69,8 @@ const modificar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.modificar = modificar;
 const eliminar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('elimina curso');
+        const result = yield cursoRepository.delete(req.params.id);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {

@@ -10,9 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calificar = exports.cancelarInscripcion = exports.inscribir = exports.consultarxCurso = exports.consultarxAlumno = exports.consultarInscripciones = void 0;
+const conexion_1 = require("../bd/conexion");
+const CursoEstudianteModel_1 = require("../models/CursoEstudianteModel");
+const inscripcionRepository = conexion_1.AppDataSource.getRepository(CursoEstudianteModel_1.CursoEstudiante);
 const consultarInscripciones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('Consulta inscripciones');
+        const inscripciones = yield inscripcionRepository.find();
+        res.json(inscripciones);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -45,7 +49,9 @@ const consultarxCurso = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.consultarxCurso = consultarxCurso;
 const inscribir = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('Inscribir');
+        const inscripcion = inscripcionRepository.create(req.body);
+        const result = yield inscripcionRepository.save(inscripcion);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {
@@ -56,7 +62,8 @@ const inscribir = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.inscribir = inscribir;
 const cancelarInscripcion = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.json('elimina prof');
+        const result = yield inscripcionRepository.delete(req.params.id);
+        res.json(result);
     }
     catch (err) {
         if (err instanceof Error) {

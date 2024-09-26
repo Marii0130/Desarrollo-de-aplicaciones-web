@@ -1,6 +1,5 @@
 import express from 'express';
 const router = express.Router();
-//import  cursoController  from '../controllers/cursoController';
 import { consultarTodos, consultarUno, eliminar, insertar, modificar } from '../controllers/cursoController';
 
 router.get('/',consultarTodos);

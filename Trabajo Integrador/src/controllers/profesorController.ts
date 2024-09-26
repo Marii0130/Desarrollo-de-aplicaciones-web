@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AppDataSource } from '../bd/conexion';
+import { AppDataSource } from '../db/conexion';
 import {Profesor} from '../models/ProfesorModel';
 
 const profesorRepository = AppDataSource.getRepository(Profesor);
