@@ -1,9 +1,19 @@
 import { createConnection } from 'mysql2/promise';
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
+import { Profesor } from '../models/ProfesorModel';
+import { Estudiante } from '../models/EstudianteModel';
+import { CursoEstudiante } from '../models/CursoEstudianteModel';
+import { Curso } from '../models/CursoModel';
 dotenv.config();
 
-const port:number = process.env.BD_PORT ? parseInt(process.env.BD_PORT, 10):3306;
+/*console.log("DB_HOST:", process.env.DB_HOST);
+console.log("DB_USER:", process.env.DB_USER);
+console.log("DB_PASSWORD:", process.env.DB_PASSWORD);
+console.log("DB_NAME:", process.env.DB_NAME);
+console.log("DB_PORT:", process.env.DB_PORT);*/
+
+const port:number = process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10):3306;
 
 async function createDatabaseIfNotExists() {
 	const connection=await createConnection({
@@ -24,7 +34,7 @@ export const AppDataSource=new DataSource({
 	username: process.env.DB_USER,
 	password: process.env.DB_PASSWORD,
 	database: process.env.DB_NAME,
-	entities:[],
+	entities:[Estudiante, Profesor, Curso, CursoEstudiante],
 	synchronize:true,
 	logging:true
 });

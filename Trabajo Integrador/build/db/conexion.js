@@ -37,8 +37,17 @@ exports.initializeDatabase = initializeDatabase;
 const promise_1 = require("mysql2/promise");
 const typeorm_1 = require("typeorm");
 const dotenv = __importStar(require("dotenv"));
+const ProfesorModel_1 = require("../models/ProfesorModel");
+const EstudianteModel_1 = require("../models/EstudianteModel");
+const CursoEstudianteModel_1 = require("../models/CursoEstudianteModel");
+const CursoModel_1 = require("../models/CursoModel");
 dotenv.config();
-const port = process.env.BD_PORT ? parseInt(process.env.BD_PORT, 10) : 3306;
+/*console.log("DB_HOST:", process.env.DB_HOST);
+console.log("DB_USER:", process.env.DB_USER);
+console.log("DB_PASSWORD:", process.env.DB_PASSWORD);
+console.log("DB_NAME:", process.env.DB_NAME);
+console.log("DB_PORT:", process.env.DB_PORT);*/
+const port = process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306;
 function createDatabaseIfNotExists() {
     return __awaiter(this, void 0, void 0, function* () {
         const connection = yield (0, promise_1.createConnection)({
@@ -58,7 +67,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [],
+    entities: [EstudianteModel_1.Estudiante, ProfesorModel_1.Profesor, CursoModel_1.Curso, CursoEstudianteModel_1.CursoEstudiante],
     synchronize: true,
     logging: true
 });

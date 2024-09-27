@@ -39,20 +39,27 @@ const app_1 = __importDefault(require("./app"));
 const conexion_1 = require("./db/conexion");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-const port = parseInt(process.env.PORT || '4100', 10);
+const port = parseInt(process.env.PORT || '4101', 10);
 const host = process.env.HOST || '0.0.0.0';
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield (0, conexion_1.initializeDatabase)();
             console.log('Base de datos conectada');
+        }
+        catch (err) {
+            if (err instanceof Error) {
+                console.log('Error al conectar con la base de datos', err.message);
+            }
+        }
+        try {
             app_1.default.listen(port, host, () => {
                 console.log(`Servidor activo en puerto ${port}`);
             });
         }
         catch (err) {
             if (err instanceof Error) {
-                console.log('Error al conectar con la base de datos', err.message);
+                console.error('Error al iniciar el servidor:', err.message);
             }
         }
     });

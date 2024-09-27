@@ -11,7 +11,7 @@ const app=express();
 
 //habilitamos pug
 app.set('view engine', 'pug');
-app.set('views', path.join(__dirname, '/views'));
+app.set('views', path.join(__dirname, 'public/views'));
 //carpeta pblica
 app.use(express.static('public'));
 
