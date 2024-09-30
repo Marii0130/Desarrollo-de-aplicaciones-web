@@ -14,16 +14,20 @@ const express_validator_1 = require("express-validator");
 const conexion_1 = require("../db/conexion");
 const EstudianteModel_1 = require("../models/EstudianteModel");
 const CursoEstudianteModel_1 = require("../models/CursoEstudianteModel");
-var estudiantes;
+let estudiantes;
 const validar = () => [
     (0, express_validator_1.check)('dni')
-        .notEmpty().withMessage('El DNI es obligatorio')
+        .notEmpty().withMessage('El DNI es un campo obligatorio')
         .isLength({ min: 7 }).withMessage('El DNI debe tener al menos 7 caracteres'),
-    (0, express_validator_1.check)('nombre').notEmpty().withMessage('El nombre es obligatorio')
-        .isLength({ min: 3 }).withMessage('El Nombre debe tener al menos 3 caracteres'),
-    (0, express_validator_1.check)('apellido').notEmpty().withMessage('El apellido es obligatorio')
-        .isLength({ min: 3 }).withMessage('El Apellido debe tener al menos 3 caracteres'),
-    (0, express_validator_1.check)('email').isEmail().withMessage('Debe proporcionar un email válido'),
+    (0, express_validator_1.check)('nombre')
+        .notEmpty().withMessage('El nombre es un campo obligatorio')
+        .isLength({ min: 3 }).withMessage('El nombre debe tener al menos 3 caracteres'),
+    (0, express_validator_1.check)('apellido')
+        .notEmpty().withMessage('El apellido es un campo obligatorio')
+        .isLength({ min: 3 }).withMessage('El apellido debe tener al menos 3 caracteres'),
+    (0, express_validator_1.check)('email')
+        .notEmpty().withMessage('El email es un campo obligatorio')
+        .isEmail().withMessage('Debe proporcionar un correo electrónico válido'),
     (req, res, next) => {
         const errores = (0, express_validator_1.validationResult)(req);
         if (!errores.isEmpty()) {

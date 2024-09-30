@@ -4,17 +4,25 @@ import { AppDataSource } from '../db/conexion';
 import {Estudiante} from '../models/EstudianteModel';
 import { CursoEstudiante } from '../models/CursoEstudianteModel';
 
-var estudiantes: Estudiante[]; 
+let estudiantes: Estudiante[]; 
 
 export const validar = () => [
     check('dni')
-        .notEmpty().withMessage('El DNI es obligatorio')
+        .notEmpty().withMessage('El DNI es un campo obligatorio')
         .isLength({ min: 7 }).withMessage('El DNI debe tener al menos 7 caracteres'),
-    check('nombre').notEmpty().withMessage('El nombre es obligatorio')
-        .isLength({ min: 3 }).withMessage('El Nombre debe tener al menos 3 caracteres'),
-    check('apellido').notEmpty().withMessage('El apellido es obligatorio')    
-        .isLength({ min: 3 }).withMessage('El Apellido debe tener al menos 3 caracteres'),
-    check('email').isEmail().withMessage('Debe proporcionar un email válido'),
+    
+    check('nombre')
+        .notEmpty().withMessage('El nombre es un campo obligatorio')
+        .isLength({ min: 3 }).withMessage('El nombre debe tener al menos 3 caracteres'),
+    
+    check('apellido')
+        .notEmpty().withMessage('El apellido es un campo obligatorio')
+        .isLength({ min: 3 }).withMessage('El apellido debe tener al menos 3 caracteres'),
+    
+    check('email')
+        .notEmpty().withMessage('El email es un campo obligatorio')
+        .isEmail().withMessage('Debe proporcionar un correo electrónico válido'),
+    
     (req: Request, res: Response, next: NextFunction) => {
         const errores = validationResult(req);
         if (!errores.isEmpty()) {
@@ -41,7 +49,6 @@ export const consultarTodos = async (req:Request, res:Response) =>{
 		}
 	}
 };
-
 
 export const consultarUno = async (req:Request, res:Response) : Promise<Estudiante | null> =>{
 	const { id } = req.params;
@@ -106,6 +113,7 @@ export const insertar = async (req:Request, res:Response):Promise<void> =>{
 		}
 	}
 };
+
 export const modificar = async (req:Request, res:Response) =>{
 	const { id } = req.params; 
     const { dni, nombre, apellido, email } = req.body;
