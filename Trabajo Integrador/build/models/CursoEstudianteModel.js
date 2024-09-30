@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CursoEstudiante = void 0;
 const typeorm_1 = require("typeorm");
+const CursoModel_1 = require("./CursoModel");
 const EstudianteModel_1 = require("./EstudianteModel");
 let CursoEstudiante = class CursoEstudiante {
 };
@@ -18,7 +19,7 @@ exports.CursoEstudiante = CursoEstudiante;
 __decorate([
     (0, typeorm_1.PrimaryColumn)(),
     __metadata("design:type", Number)
-], CursoEstudiante.prototype, "profesor_id", void 0);
+], CursoEstudiante.prototype, "estudiante_id", void 0);
 __decorate([
     (0, typeorm_1.PrimaryColumn)(),
     __metadata("design:type", Number)
@@ -36,6 +37,11 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'estudiante_id' }),
     __metadata("design:type", EstudianteModel_1.Estudiante)
 ], CursoEstudiante.prototype, "estudiante", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => CursoModel_1.Curso, (curso) => curso.estudiantes),
+    (0, typeorm_1.JoinColumn)({ name: 'curso_id' }),
+    __metadata("design:type", CursoModel_1.Curso)
+], CursoEstudiante.prototype, "curso", void 0);
 exports.CursoEstudiante = CursoEstudiante = __decorate([
     (0, typeorm_1.Entity)('curso_estudiantes')
 ], CursoEstudiante);

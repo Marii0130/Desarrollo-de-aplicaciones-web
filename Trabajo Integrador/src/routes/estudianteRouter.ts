@@ -5,7 +5,6 @@ const router = express.Router();
 
 router.get('/listarEstudiantes', consultarTodos);
 
-//insertar
 router.get('/crearEstudiante', (req, res) => {
     res.render('crearEstudiante', {
         pagina: 'Crear Estudiante',
@@ -13,7 +12,6 @@ router.get('/crearEstudiante', (req, res) => {
 });
 router.post('/', validar(), insertar);
 
-//modificar
 router.get('/modificarEstudiante/:id', async (req, res) => {
     try {
         const estudiante = await consultarUno(req, res); 
@@ -31,7 +29,6 @@ router.get('/modificarEstudiante/:id', async (req, res) => {
 });
 router.put('/:id', modificar); 
 
-//eliminar
 router.delete('/:id', eliminar);
 
 export default router;

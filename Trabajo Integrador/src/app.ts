@@ -5,6 +5,7 @@ import path from 'path';
 
 import estudianteRouter from'./routes/estudianteRouter';
 import profesorRouter from'./routes/profesorRouter';
+import cursoRouter from'./routes/cursoRouter';
 
 import methodOverride from 'method-override';
 
@@ -30,5 +31,6 @@ app.get('/',(req:Request,res:Response)=>{
 });
 app.use('/estudiantes', estudianteRouter);
 app.use('/profesores', profesorRouter);
+app.use('/cursos', cursoRouter);
 
 export default app;

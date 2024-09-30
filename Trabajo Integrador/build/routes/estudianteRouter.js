@@ -16,14 +16,12 @@ const express_1 = __importDefault(require("express"));
 const estudianteController_1 = require("../controllers/estudianteController");
 const router = express_1.default.Router();
 router.get('/listarEstudiantes', estudianteController_1.consultarTodos);
-//insertar
 router.get('/crearEstudiante', (req, res) => {
     res.render('crearEstudiante', {
         pagina: 'Crear Estudiante',
     });
 });
 router.post('/', (0, estudianteController_1.validar)(), estudianteController_1.insertar);
-//modificar
 router.get('/modificarEstudiante/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const estudiante = yield (0, estudianteController_1.consultarUno)(req, res);
@@ -41,6 +39,5 @@ router.get('/modificarEstudiante/:id', (req, res) => __awaiter(void 0, void 0, v
     }
 }));
 router.put('/:id', estudianteController_1.modificar);
-//eliminar
 router.delete('/:id', estudianteController_1.eliminar);
 exports.default = router;

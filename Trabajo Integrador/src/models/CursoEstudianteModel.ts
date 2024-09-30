@@ -4,7 +4,7 @@ import {Estudiante} from "./EstudianteModel";
 @Entity('curso_estudiantes')
 export class CursoEstudiante{
 	@PrimaryColumn()
-	profesor_id:number;
+	estudiante_id:number;
 	@PrimaryColumn()
 	curso_id:number;
 	@Column({type:'float', default:()=>0})
@@ -15,4 +15,8 @@ export class CursoEstudiante{
     @ManyToOne(()=>Estudiante,(estudiante)=>estudiante.cursos)
     @JoinColumn({name:'estudiante_id'})
     public estudiante:Estudiante;
+
+	@ManyToOne(() => Curso, (curso) => curso.estudiantes)
+    @JoinColumn({name: 'curso_id'})
+    public curso: Curso;
 }

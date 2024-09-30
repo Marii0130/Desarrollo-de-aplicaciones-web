@@ -75,7 +75,6 @@ export const consultarUno = async (req:Request, res:Response) : Promise<Estudian
 	}
 };
 
-
 export const insertar = async (req:Request, res:Response):Promise<void> =>{
 	const errores = validationResult(req);
     if (!errores.isEmpty()) {
@@ -136,7 +135,6 @@ export const modificar = async (req:Request, res:Response) =>{
 export const eliminar = async (req:Request, res:Response): Promise<void> => {
     const { id } = req.params;
 	try{
-		//console.log(`ID recibido para eliminar: ${id}`); 
         await AppDataSource.transaction(async transactionalEntityManager => {
             const cursosEstudiantesRepository = transactionalEntityManager.getRepository(CursoEstudiante);
             const estudianteRepository = transactionalEntityManager.getRepository(Estudiante);
