@@ -6,8 +6,8 @@ const router = express.Router();
 router.get('/listarEstudiantes', consultarTodos);
 
 //insertar
-router.get('/crearEstudiantes', (req, res) => {
-    res.render('crearEstudiantes', {
+router.get('/crearEstudiante', (req, res) => {
+    res.render('crearEstudiante', {
         pagina: 'Crear Estudiante',
     });
 });

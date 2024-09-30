@@ -85,7 +85,7 @@ exports.consultarUno = consultarUno;
 const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errores = (0, express_validator_1.validationResult)(req);
     if (!errores.isEmpty()) {
-        return res.render('cargaEstudiantes', {
+        return res.render('crearEstudiante', {
             pagina: 'Crear Estudiante',
             errores: errores.array()
         });

@@ -17,8 +17,8 @@ const estudianteController_1 = require("../controllers/estudianteController");
 const router = express_1.default.Router();
 router.get('/listarEstudiantes', estudianteController_1.consultarTodos);
 //insertar
-router.get('/crearEstudiantes', (req, res) => {
-    res.render('crearEstudiantes', {
+router.get('/crearEstudiante', (req, res) => {
+    res.render('crearEstudiante', {
         pagina: 'Crear Estudiante',
     });
 });

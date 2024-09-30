@@ -79,7 +79,7 @@ export const consultarUno = async (req:Request, res:Response) : Promise<Estudian
 export const insertar = async (req:Request, res:Response):Promise<void> =>{
 	const errores = validationResult(req);
     if (!errores.isEmpty()) {
-        return res.render('cargaEstudiantes', {
+        return res.render('crearEstudiante', {
             pagina: 'Crear Estudiante',
             errores: errores.array()
         });
