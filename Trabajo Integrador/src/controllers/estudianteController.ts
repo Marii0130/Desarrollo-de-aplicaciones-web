@@ -38,6 +38,45 @@ export const validar = () => [
     }
 ];
 
+export const insertar = async (req: Request, res: Response): Promise<void> => {
+    const errores = validationResult(req);
+    if (!errores.isEmpty()) {
+        return res.render('crearEstudiante', {
+            pagina: 'Crear Estudiante',
+            errores: errores.array(),
+        });
+    }
+
+    const { dni, nombre, apellido, email } = req.body;
+
+    try {
+        // Verificar si ya existe un estudiante con el mismo DNI
+        const estudianteRepository = AppDataSource.getRepository(Estudiante);
+        const estudianteExistente = await estudianteRepository.findOne({ where: { dni } });
+
+        if (estudianteExistente) {
+            return res.render('crearEstudiante', {
+                pagina: 'Crear Estudiante',
+                errores: [{ msg: 'El DNI ya está registrado en el sistema' }], // Mensaje de error personalizado
+            });
+        }
+
+        // Crear nuevo estudiante si el DNI no está duplicado
+        const nuevoEstudiante = estudianteRepository.create({ dni, nombre, apellido, email });
+        await estudianteRepository.save(nuevoEstudiante);
+
+        const estudiantes = await estudianteRepository.find();
+        res.render('listarEstudiantes', {
+            pagina: 'Lista de Estudiantes',
+            estudiantes,
+        });
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            res.status(500).send(err.message);
+        }
+    }
+};
+
 export const consultarTodos = async (req:Request, res:Response) =>{
 	try{
 		const estudianteRepository = AppDataSource.getRepository(Estudiante);
@@ -76,45 +115,6 @@ export const consultarUno = async (req:Request, res:Response) : Promise<Estudian
             throw new Error('Error desconocido');
         }
 	}
-};
-
-export const insertar = async (req: Request, res: Response): Promise<void> => {
-    const errores = validationResult(req);
-    if (!errores.isEmpty()) {
-        return res.render('crearEstudiante', {
-            pagina: 'Crear Estudiante',
-            errores: errores.array(),
-        });
-    }
-
-    const { dni, nombre, apellido, email } = req.body;
-
-    try {
-        // Verificar si ya existe un estudiante con el mismo DNI
-        const estudianteRepository = AppDataSource.getRepository(Estudiante);
-        const estudianteExistente = await estudianteRepository.findOne({ where: { dni } });
-
-        if (estudianteExistente) {
-            return res.render('crearEstudiante', {
-                pagina: 'Crear Estudiante',
-                errores: [{ msg: 'El DNI ya está registrado en el sistema' }], // Mensaje de error personalizado
-            });
-        }
-
-        // Crear nuevo estudiante si el DNI no está duplicado
-        const nuevoEstudiante = estudianteRepository.create({ dni, nombre, apellido, email });
-        await estudianteRepository.save(nuevoEstudiante);
-
-        const estudiantes = await estudianteRepository.find();
-        res.render('listarEstudiantes', {
-            pagina: 'Lista de Estudiantes',
-            estudiantes,
-        });
-    } catch (err: unknown) {
-        if (err instanceof Error) {
-            res.status(500).send(err.message);
-        }
-    }
 };
 
 export const modificar = async (req:Request, res:Response) =>{

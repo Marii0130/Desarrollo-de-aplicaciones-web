@@ -9,24 +9,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.eliminar = exports.modificar = exports.insertar = exports.mostrarFormularioCrear = exports.consultarUno = exports.consultarTodos = exports.validar = void 0;
+exports.eliminar = exports.modificar = exports.mostrarFormularioCrear = exports.consultarUno = exports.consultarTodos = exports.insertar = void 0;
 const express_validator_1 = require("express-validator");
 const conexion_1 = require("../db/conexion");
 const CursoModel_1 = require("../models/CursoModel");
 const ProfesorModel_1 = require("../models/ProfesorModel");
 const CursoEstudianteModel_1 = require("../models/CursoEstudianteModel");
-const validar = () => [
-    (0, express_validator_1.check)('nombre')
+/*export const validar = () => [
+    check('nombre')
         .notEmpty().withMessage('El nombre es un campo obligatorio')
         .isLength({ min: 3 }).withMessage('El nombre debe tener al menos 3 caracteres'),
-    (0, express_validator_1.check)('descripcion')
+
+    check('descripcion')
         .notEmpty().withMessage('La descripción es un campo obligatorio')
         .isLength({ min: 10 }).withMessage('La descripción debe tener al menos 10 caracteres'),
-    (0, express_validator_1.check)('profesor_id')
+
+    check('profesor_id')
         .notEmpty().withMessage('El ID del profesor es un campo obligatorio')
         .isNumeric().withMessage('El ID del profesor debe ser un número'),
-    (req, res, next) => {
-        const errores = (0, express_validator_1.validationResult)(req);
+
+    // Middleware para manejar errores de validación
+    (req: Request, res: Response, next: NextFunction) => {
+        const errores = validationResult(req);
         if (!errores.isEmpty()) {
             return res.render('crearCurso', {
                 pagina: 'Crear Curso',
@@ -36,7 +40,43 @@ const validar = () => [
         next();
     }
 ];
-exports.validar = validar;
+*/
+const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const errores = (0, express_validator_1.validationResult)(req);
+    if (!errores.isEmpty()) {
+        res.status(400).json({ errores: errores.array() });
+        return; // Asegúrate de salir de la función después de enviar la respuesta
+    }
+    const { nombre, descripcion, profesor_id } = req.body;
+    try {
+        yield conexion_1.AppDataSource.transaction((transactionalEntityManager) => __awaiter(void 0, void 0, void 0, function* () {
+            const cursoRepository = transactionalEntityManager.getRepository(CursoModel_1.Curso);
+            const profesorRepository = transactionalEntityManager.getRepository(ProfesorModel_1.Profesor);
+            const profesor = yield profesorRepository.findOneBy({ id: profesor_id });
+            if (!profesor) {
+                throw new Error('El profesor especificado no existe.');
+            }
+            const existeCurso = yield cursoRepository.findOne({
+                where: { nombre }
+            });
+            if (existeCurso) {
+                throw new Error('El curso ya existe.');
+            }
+            const nuevoCurso = cursoRepository.create({ nombre, descripcion, profesor });
+            yield cursoRepository.save(nuevoCurso);
+        }));
+        res.redirect('/cursos/listarCursos');
+    }
+    catch (err) {
+        if (err instanceof Error) {
+            res.status(500).json({ mensaje: err.message });
+        }
+        else {
+            res.status(500).json({ mensaje: 'Error desconocido' });
+        }
+    }
+});
+exports.insertar = insertar;
 const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const cursoRepository = conexion_1.AppDataSource.getRepository(CursoModel_1.Curso);
@@ -95,42 +135,6 @@ const mostrarFormularioCrear = (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.mostrarFormularioCrear = mostrarFormularioCrear;
-const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const errores = (0, express_validator_1.validationResult)(req);
-    if (!errores.isEmpty()) {
-        res.status(400).json({ errores: errores.array() });
-    }
-    const { nombre, descripcion, profesor_id } = req.body;
-    try {
-        yield conexion_1.AppDataSource.transaction((transactionalEntityManager) => __awaiter(void 0, void 0, void 0, function* () {
-            const cursoRepository = transactionalEntityManager.getRepository(CursoModel_1.Curso);
-            const profesorRepository = transactionalEntityManager.getRepository(ProfesorModel_1.Profesor);
-            const profesor = yield profesorRepository.findOneBy({ id: profesor_id });
-            const profesores = yield profesorRepository.find();
-            if (!profesor) {
-                throw new Error('El profesor especificado no existe.');
-            }
-            const existeCurso = yield cursoRepository.findOne({
-                where: { nombre }
-            });
-            if (existeCurso) {
-                throw new Error('El curso ya existe.');
-            }
-            const nuevoCurso = cursoRepository.create({ nombre, descripcion, profesor });
-            yield cursoRepository.save(nuevoCurso);
-        }));
-        res.redirect('/cursos/listarCursos');
-    }
-    catch (err) {
-        if (err instanceof Error) {
-            res.status(500).json({ mensaje: err.message });
-        }
-        else {
-            res.status(500).json({ mensaje: 'Error desconocido' });
-        }
-    }
-});
-exports.insertar = insertar;
 const modificar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { nombre, descripcion, profesor_id } = req.body;

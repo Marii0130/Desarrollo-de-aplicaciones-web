@@ -9,12 +9,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.actualizar = exports.modificar = exports.consultarTodos = exports.eliminar = exports.insertar = void 0;
+exports.buscarCursosPorEstudiante = exports.buscarEstudiantesPorCurso = exports.actualizar = exports.modificar = exports.consultarTodos = exports.eliminar = exports.insertar = exports.validar = void 0;
+const express_validator_1 = require("express-validator");
 const conexion_1 = require("../db/conexion");
 const CursoEstudianteModel_1 = require("../models/CursoEstudianteModel");
 const EstudianteModel_1 = require("../models/EstudianteModel");
 const CursoModel_1 = require("../models/CursoModel");
 let inscripcion;
+const validar = () => [
+    (0, express_validator_1.check)('estudiante_id')
+        .notEmpty().withMessage('El ID del estudiante es obligatorio')
+        .isNumeric().withMessage('El ID del estudiante debe ser un número'),
+    (0, express_validator_1.check)('curso_id')
+        .notEmpty().withMessage('El ID del curso es obligatorio')
+        .isNumeric().withMessage('El ID del curso debe ser un número'),
+    (0, express_validator_1.check)('nota')
+        .optional() // Nota puede ser opcional si no es necesario en el momento de la inscripción
+        .isNumeric().withMessage('La nota debe ser un número')
+        .isFloat({ min: 0, max: 10 }).withMessage('La nota debe estar entre 0 y 10'),
+    (0, express_validator_1.check)('fecha')
+        .optional() // La fecha puede ser opcional ya que se establece por defecto
+        .isDate().withMessage('La fecha debe ser una fecha válida'),
+    // Middleware para manejar errores de validación
+    (req, res, next) => {
+        const errores = (0, express_validator_1.validationResult)(req);
+        if (!errores.isEmpty()) {
+            return res.status(400).json({ errores: errores.array() });
+        }
+        next();
+    }
+];
+exports.validar = validar;
 const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { estudiante_id, curso_id, fecha } = req.body;
     try {
@@ -27,7 +52,7 @@ const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const inscripcion = new CursoEstudianteModel_1.CursoEstudiante();
         inscripcion.estudiante = estudiante;
         inscripcion.curso = curso;
-        inscripcion.fecha = fecha;
+        inscripcion.fecha = fecha || new Date(); // Usa la fecha actual si no se proporciona
         yield conexion_1.AppDataSource.getRepository(CursoEstudianteModel_1.CursoEstudiante).save(inscripcion);
         res.redirect('/inscripciones/listarInscripciones');
     }
@@ -137,3 +162,35 @@ const actualizar = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.actualizar = actualizar;
+const buscarEstudiantesPorCurso = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { curso_id } = req.params;
+    try {
+        const cursoEstudianteRepository = conexion_1.AppDataSource.getRepository(CursoEstudianteModel_1.CursoEstudiante);
+        const estudiantesEnCurso = yield cursoEstudianteRepository.find({
+            where: { curso_id: Number(curso_id) },
+            relations: ['estudiante']
+        });
+        res.json(estudiantesEnCurso);
+    }
+    catch (error) {
+        console.error('Error al obtener estudiantes en el curso:', error);
+        res.status(500).json({ mensaje: 'Error del servidor' });
+    }
+});
+exports.buscarEstudiantesPorCurso = buscarEstudiantesPorCurso;
+const buscarCursosPorEstudiante = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { estudiante_id } = req.params;
+    try {
+        const cursoEstudianteRepository = conexion_1.AppDataSource.getRepository(CursoEstudianteModel_1.CursoEstudiante);
+        const cursosDelEstudiante = yield cursoEstudianteRepository.find({
+            where: { estudiante_id: Number(estudiante_id) },
+            relations: ['curso']
+        });
+        res.json(cursosDelEstudiante);
+    }
+    catch (error) {
+        console.error('Error al obtener cursos del estudiante:', error);
+        res.status(500).json({ mensaje: 'Error del servidor' });
+    }
+});
+exports.buscarCursosPorEstudiante = buscarCursosPorEstudiante;

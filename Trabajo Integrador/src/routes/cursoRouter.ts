@@ -1,14 +1,14 @@
 import express from 'express';
 import { AppDataSource } from '../db/conexion';
 import {Profesor} from '../models/ProfesorModel';
-import { consultarTodos, consultarUno, eliminar, insertar, modificar, mostrarFormularioCrear, validar } from '../controllers/cursoController';
+import { consultarTodos, consultarUno, eliminar, insertar, modificar, mostrarFormularioCrear/*, validar */} from '../controllers/cursoController';
 
 const router = express.Router();
 
 router.get('/listarCursos',consultarTodos);
 
 router.get('/crearCurso', mostrarFormularioCrear);
-router.post('/', validar(),insertar);
+router.post('/',insertar);
 
 router.get('/modificarCurso/:id', async (req, res) => {
     try {

@@ -28,7 +28,7 @@ router.get('/modificarProfesor/:id', async (req, res) => {
     }
 });
 
-router.put('/:id', modificar); 
+router.put('/:id', validar(), modificar); 
 
 //eliminar
 router.delete('/:id', eliminar);

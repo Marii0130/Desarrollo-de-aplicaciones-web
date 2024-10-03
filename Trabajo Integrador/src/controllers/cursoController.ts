@@ -5,7 +5,7 @@ import {Curso} from '../models/CursoModel';
 import {Profesor} from '../models/ProfesorModel';
 import {CursoEstudiante} from '../models/CursoEstudianteModel';
 
-export const validar = () => [
+/*export const validar = () => [
     check('nombre')
         .notEmpty().withMessage('El nombre es un campo obligatorio')
         .isLength({ min: 3 }).withMessage('El nombre debe tener al menos 3 caracteres'),
@@ -18,6 +18,7 @@ export const validar = () => [
         .notEmpty().withMessage('El ID del profesor es un campo obligatorio')
         .isNumeric().withMessage('El ID del profesor debe ser un número'),
 
+    // Middleware para manejar errores de validación
     (req: Request, res: Response, next: NextFunction) => {
         const errores = validationResult(req);
         if (!errores.isEmpty()) {
@@ -29,6 +30,47 @@ export const validar = () => [
         next();
     }
 ];
+*/
+export const insertar = async (req: Request, res: Response): Promise<void> => {
+    const errores = validationResult(req);
+    if (!errores.isEmpty()) {
+        res.status(400).json({ errores: errores.array() });
+        return; // Asegúrate de salir de la función después de enviar la respuesta
+    }
+
+    const { nombre, descripcion, profesor_id } = req.body;
+
+    try {
+        await AppDataSource.transaction(async (transactionalEntityManager) => {
+            const cursoRepository = transactionalEntityManager.getRepository(Curso);
+            const profesorRepository = transactionalEntityManager.getRepository(Profesor);
+            const profesor = await profesorRepository.findOneBy({ id: profesor_id });
+
+            if (!profesor) {
+                throw new Error('El profesor especificado no existe.');
+            }
+
+            const existeCurso = await cursoRepository.findOne({
+                where: { nombre }
+            });
+
+            if (existeCurso) {
+                throw new Error('El curso ya existe.');
+            }
+
+            const nuevoCurso = cursoRepository.create({ nombre, descripcion, profesor });
+            await cursoRepository.save(nuevoCurso);
+        });
+
+        res.redirect('/cursos/listarCursos');
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            res.status(500).json({ mensaje: err.message });
+        } else {
+            res.status(500).json({ mensaje: 'Error desconocido' });
+        }
+    }
+};
 
 export const consultarTodos = async (req: Request, res: Response) => {
     try {
@@ -87,45 +129,6 @@ export const mostrarFormularioCrear = async (req: Request, res: Response) => {
         res.status(500).send('Error al cargar el formulario');
     }
 };
-
-export const insertar = async (req: Request, res: Response): Promise<void> => {
-	const errores = validationResult(req);
-	if (!errores.isEmpty()) {
-	   res.status(400).json({ errores: errores.array() });
-	}
-	
-	const { nombre, descripcion, profesor_id } = req.body;
-	try {
-	  await AppDataSource.transaction(async (transactionalEntityManager) => {
-		const cursoRepository = transactionalEntityManager.getRepository(Curso);
-		const profesorRepository = transactionalEntityManager.getRepository(Profesor);
-		const profesor = await profesorRepository.findOneBy({ id: profesor_id });
-        const profesores = await profesorRepository.find();
-		if (!profesor) {
-		  throw new Error('El profesor especificado no existe.');
-		}
-  
-		const existeCurso = await cursoRepository.findOne({
-		  where: { nombre }
-		});
-  
-		if (existeCurso) {
-		  throw new Error('El curso ya existe.');
-		}
-  
-		const nuevoCurso = cursoRepository.create({ nombre, descripcion, profesor });
-		await cursoRepository.save(nuevoCurso);
-	  });
-  
-	  res.redirect('/cursos/listarCursos');
-	} catch (err: unknown) {
-	  if (err instanceof Error) {
-		res.status(500).json({ mensaje: err.message });
-	  } else {
-		res.status(500).json({ mensaje: 'Error desconocido' });
-	  }
-	}
-  };
 
   export const modificar = async (req: Request, res: Response) => {
     const { id } = req.params;

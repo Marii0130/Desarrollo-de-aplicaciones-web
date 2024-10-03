@@ -10,31 +10,71 @@ export const validar = () => [
     check('dni')
         .notEmpty().withMessage('El DNI es obligatorio')
         .isLength({ min: 7 }).withMessage('El DNI debe tener al menos 7 caracteres'),
+
     check('nombre')
         .notEmpty().withMessage('El nombre es obligatorio')
         .isLength({ min: 3 }).withMessage('El Nombre debe tener al menos 3 caracteres'),
+
     check('apellido')
         .notEmpty().withMessage('El apellido es obligatorio')
         .isLength({ min: 3 }).withMessage('El Apellido debe tener al menos 3 caracteres'),
+
     check('email')
+        .notEmpty().withMessage('El email es obligatorio')
         .isEmail().withMessage('Debe proporcionar un email válido'),
+
     check('profesion')
         .notEmpty().withMessage('La profesión es obligatoria')
         .isLength({ min: 3 }).withMessage('La profesión debe tener al menos 3 caracteres'),
+
     check('telefono')
         .notEmpty().withMessage('El teléfono es obligatorio')
         .isLength({ min: 10 }).withMessage('El teléfono debe tener al menos 10 caracteres'),
-    (req: Request, res: Response, next: NextFunction) => {
-        const errores = validationResult(req);
-        if (!errores.isEmpty()) {
-            return res.render('creaProfesores', {
+];
+
+export const insertar = async (req: Request, res: Response): Promise<void> => {
+    const errores = validationResult(req);
+    if (!errores.isEmpty()) {
+        return res.render('crearProfesor', {
+            pagina: 'Crear Profesor',
+            errores: errores.array(),
+        });
+    }
+
+    const { dni, nombre, apellido, email, profesion, telefono } = req.body;
+
+    try {
+        // Verificar si ya existe un profesor con el mismo DNI o email
+        const profesorRepository = AppDataSource.getRepository(Profesor);
+        const existeProfesor = await profesorRepository.findOne({
+            where: [
+                { dni },
+                { email }
+            ]
+        });
+
+        if (existeProfesor) {
+            return res.render('crearProfesor', {
                 pagina: 'Crear Profesor',
-                errores: errores.array()
+                errores: [{ msg: 'El DNI o el email ya están registrados en el sistema' }], // Mensaje de error personalizado
             });
         }
-        next();
+
+        // Crear nuevo profesor si el DNI y email no están duplicados
+        const nuevoProfesor = profesorRepository.create({ dni, nombre, apellido, email, profesion, telefono });
+        await profesorRepository.save(nuevoProfesor);
+
+        const profesores = await profesorRepository.find();
+        res.render('listarProfesores', {
+            pagina: 'Lista de Profesores',
+            profesores,
+        });
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            res.status(500).send(err.message);
+        }
     }
-];
+};
 
 export const consultarTodos = async (req:Request, res:Response) =>{
 	try{
@@ -73,44 +113,6 @@ export const consultarUno = async (req:Request, res:Response) : Promise<Profesor
         } else {
             throw new Error('Error desconocido');
         }
-	}
-};
-
-export const insertar = async (req:Request, res:Response):Promise<void> =>{
-	const errores = validationResult(req);
-    if (!errores.isEmpty()) {
-        return res.render('crearProfesor', {
-            pagina: 'Crear Profesor',
-            errores: errores.array()
-        });
-    }
-    const { dni, nombre, apellido, email, profesion, telefono } = req.body;
-
-	try{
-			await AppDataSource.transaction(async (transactionalEntityManager) => {
-            const profesorRepository = transactionalEntityManager.getRepository(Profesor);
-            const existeProfesor = await profesorRepository.findOne({
-                where: [
-                    { dni },
-                    { email }
-                ]
-            });
-
-            if (existeProfesor) {
-                throw new Error('El profesor ya existe.');
-            }
-            const nuevoProfesor = profesorRepository.create({ dni, nombre, apellido, email, profesion, telefono });
-            await profesorRepository.save(nuevoProfesor);
-        });
-        const profesores = await AppDataSource.getRepository(Profesor).find();
-        res.render('listarProfesores', {
-            pagina: 'Lista de Profesores',
-            profesores
-        });
-	} catch (err: unknown) {
-		if (err instanceof Error){
-			res.status(500).send(err.message);
-		}
 	}
 };
 

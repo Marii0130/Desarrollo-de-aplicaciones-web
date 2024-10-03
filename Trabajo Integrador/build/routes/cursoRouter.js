@@ -19,7 +19,7 @@ const cursoController_1 = require("../controllers/cursoController");
 const router = express_1.default.Router();
 router.get('/listarCursos', cursoController_1.consultarTodos);
 router.get('/crearCurso', cursoController_1.mostrarFormularioCrear);
-router.post('/', (0, cursoController_1.validar)(), cursoController_1.insertar);
+router.post('/', cursoController_1.insertar);
 router.get('/modificarCurso/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const curso = yield (0, cursoController_1.consultarUno)(req, res);

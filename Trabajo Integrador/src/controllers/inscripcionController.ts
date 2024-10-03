@@ -1,5 +1,6 @@
 
-import { Request,Response } from "express";
+import { Request,Response, NextFunction } from "express";
+import { check, validationResult } from 'express-validator';
 import { AppDataSource } from '../db/conexion';
 import { CursoEstudiante } from '../models/CursoEstudianteModel';
 import { Estudiante } from '../models/EstudianteModel';
@@ -7,6 +8,34 @@ import { Curso } from '../models/CursoModel'
 import { Profesor } from "../models/ProfesorModel";
 
 let inscripcion: CursoEstudiante[];
+
+export const validar = () => [
+    check('estudiante_id')
+        .notEmpty().withMessage('El ID del estudiante es obligatorio')
+        .isNumeric().withMessage('El ID del estudiante debe ser un número'),
+
+    check('curso_id')
+        .notEmpty().withMessage('El ID del curso es obligatorio')
+        .isNumeric().withMessage('El ID del curso debe ser un número'),
+
+    check('nota')
+        .optional() // Nota puede ser opcional si no es necesario en el momento de la inscripción
+        .isNumeric().withMessage('La nota debe ser un número')
+        .isFloat({ min: 0, max: 10 }).withMessage('La nota debe estar entre 0 y 10'),
+
+    check('fecha')
+        .optional() // La fecha puede ser opcional ya que se establece por defecto
+        .isDate().withMessage('La fecha debe ser una fecha válida'),
+
+    // Middleware para manejar errores de validación
+    (req: Request, res: Response, next: NextFunction) => {
+        const errores = validationResult(req);
+        if (!errores.isEmpty()) {
+            return res.status(400).json({ errores: errores.array() });
+        }
+        next();
+    }
+];
 
 export const insertar = async (req: Request, res: Response): Promise<void> => {
     const { estudiante_id, curso_id, fecha } = req.body;
@@ -23,7 +52,7 @@ export const insertar = async (req: Request, res: Response): Promise<void> => {
         const inscripcion = new CursoEstudiante();
         inscripcion.estudiante = estudiante;
         inscripcion.curso = curso;
-        inscripcion.fecha = fecha;
+        inscripcion.fecha = fecha || new Date(); // Usa la fecha actual si no se proporciona
 
         await AppDataSource.getRepository(CursoEstudiante).save(inscripcion);
         res.redirect('/inscripciones/listarInscripciones');
@@ -32,8 +61,6 @@ export const insertar = async (req: Request, res: Response): Promise<void> => {
         res.status(500).send('Error al inscribir al estudiante');
     }
 };
-
-
 
 export const eliminar = async (req:Request,res:Response):Promise<void>=>{
     try{
@@ -143,3 +170,39 @@ export const actualizar = async (req: Request, res: Response): Promise<void> => 
         res.status(500).send('Error al actualizar la inscripción.');
     }
 };
+
+/*export const buscarEstudiantesPorCurso = async (req: Request, res: Response) => {
+    const { curso_id } = req.params;
+
+    try {
+        const cursoEstudianteRepository = AppDataSource.getRepository(CursoEstudiante);
+
+        const estudiantesEnCurso = await cursoEstudianteRepository.find({
+            where: { curso_id: Number(curso_id) },
+            relations: ['estudiante']
+        });
+
+        res.json(estudiantesEnCurso);
+    } catch (error) {
+        console.error('Error al obtener estudiantes en el curso:', error);
+        res.status(500).json({ mensaje: 'Error del servidor' });
+    }
+};
+
+export const buscarCursosPorEstudiante = async (req: Request, res: Response) => {
+    const { estudiante_id } = req.params;
+
+    try {
+        const cursoEstudianteRepository = AppDataSource.getRepository(CursoEstudiante);
+
+        const cursosDelEstudiante = await cursoEstudianteRepository.find({
+            where: { estudiante_id: Number(estudiante_id) },
+            relations: ['curso']
+        });
+
+        res.json(cursosDelEstudiante);
+    } catch (error) {
+        console.error('Error al obtener cursos del estudiante:', error);
+        res.status(500).json({ mensaje: 'Error del servidor' });
+    }
+};*/

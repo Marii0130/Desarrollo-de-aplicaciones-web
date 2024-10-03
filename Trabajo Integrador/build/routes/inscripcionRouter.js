@@ -18,6 +18,9 @@ const conexion_1 = require("../db/conexion"); // Asegúrate de ajustar la import
 const EstudianteModel_1 = require("../models/EstudianteModel"); // Asegúrate de ajustar la importación
 const CursoModel_1 = require("../models/CursoModel"); // Asegúrate de ajustar la importación
 const router = express_1.default.Router();
+router.get('/listarEstudiantesPorCurso/:curso_id', inscripcionController_1.buscarEstudiantesPorCurso);
+// Listar cursos por estudiante
+router.get('/listarCursosPorEstudiante/:estudiante_id', inscripcionController_1.buscarCursosPorEstudiante);
 // Ruta para crear inscripciones
 router.get('/crearInscripcion', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -35,11 +38,8 @@ router.get('/crearInscripcion', (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 }));
 router.get('/listarInscripciones', inscripcionController_1.consultarTodos);
-router.post('/crearInscripcion', inscripcionController_1.insertar);
+router.post('/crearInscripcion', (0, inscripcionController_1.validar)(), inscripcionController_1.insertar);
 router.delete('/:curso_id/:estudiante_id', inscripcionController_1.eliminar);
 router.get('/modificarInscripcion/:curso_id/:estudiante_id', inscripcionController_1.modificar);
-router.put('/:curso_id/:estudiante_id', (req, res, next) => {
-    console.log('Ruta PUT /inscripciones/:curso_id/:estudiante_id alcanzada');
-    next(); // Deja que el siguiente middleware (tu controlador) se ejecute
-}, inscripcionController_1.actualizar);
+router.put('/:curso_id/:estudiante_id', (0, inscripcionController_1.validar)(), inscripcionController_1.actualizar);
 exports.default = router;

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.eliminar = exports.modificar = exports.insertar = exports.consultarUno = exports.consultarTodos = exports.validar = void 0;
+exports.eliminar = exports.modificar = exports.consultarUno = exports.consultarTodos = exports.insertar = exports.validar = void 0;
 const express_validator_1 = require("express-validator");
 const conexion_1 = require("../db/conexion");
 const EstudianteModel_1 = require("../models/EstudianteModel");
@@ -43,6 +43,41 @@ const validar = () => [
     }
 ];
 exports.validar = validar;
+const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const errores = (0, express_validator_1.validationResult)(req);
+    if (!errores.isEmpty()) {
+        return res.render('crearEstudiante', {
+            pagina: 'Crear Estudiante',
+            errores: errores.array(),
+        });
+    }
+    const { dni, nombre, apellido, email } = req.body;
+    try {
+        // Verificar si ya existe un estudiante con el mismo DNI
+        const estudianteRepository = conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante);
+        const estudianteExistente = yield estudianteRepository.findOne({ where: { dni } });
+        if (estudianteExistente) {
+            return res.render('crearEstudiante', {
+                pagina: 'Crear Estudiante',
+                errores: [{ msg: 'El DNI ya está registrado en el sistema' }], // Mensaje de error personalizado
+            });
+        }
+        // Crear nuevo estudiante si el DNI no está duplicado
+        const nuevoEstudiante = estudianteRepository.create({ dni, nombre, apellido, email });
+        yield estudianteRepository.save(nuevoEstudiante);
+        const estudiantes = yield estudianteRepository.find();
+        res.render('listarEstudiantes', {
+            pagina: 'Lista de Estudiantes',
+            estudiantes,
+        });
+    }
+    catch (err) {
+        if (err instanceof Error) {
+            res.status(500).send(err.message);
+        }
+    }
+});
+exports.insertar = insertar;
 const consultarTodos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const estudianteRepository = conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante);
@@ -85,41 +120,6 @@ const consultarUno = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.consultarUno = consultarUno;
-const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const errores = (0, express_validator_1.validationResult)(req);
-    if (!errores.isEmpty()) {
-        return res.render('crearEstudiante', {
-            pagina: 'Crear Estudiante',
-            errores: errores.array(),
-        });
-    }
-    const { dni, nombre, apellido, email } = req.body;
-    try {
-        // Verificar si ya existe un estudiante con el mismo DNI
-        const estudianteRepository = conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante);
-        const estudianteExistente = yield estudianteRepository.findOne({ where: { dni } });
-        if (estudianteExistente) {
-            return res.render('crearEstudiante', {
-                pagina: 'Crear Estudiante',
-                errores: [{ msg: 'El DNI ya está registrado en el sistema' }], // Mensaje de error personalizado
-            });
-        }
-        // Crear nuevo estudiante si el DNI no está duplicado
-        const nuevoEstudiante = estudianteRepository.create({ dni, nombre, apellido, email });
-        yield estudianteRepository.save(nuevoEstudiante);
-        const estudiantes = yield estudianteRepository.find();
-        res.render('listarEstudiantes', {
-            pagina: 'Lista de Estudiantes',
-            estudiantes,
-        });
-    }
-    catch (err) {
-        if (err instanceof Error) {
-            res.status(500).send(err.message);
-        }
-    }
-});
-exports.insertar = insertar;
 const modificar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { dni, nombre, apellido, email } = req.body;
