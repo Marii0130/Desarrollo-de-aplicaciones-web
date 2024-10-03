@@ -20,7 +20,7 @@ block contenido
                         select#estudiante.w-full.px-3.py-2.border.border-gray-300.rounded-md(name="estudiante_id")
                             option(value="") -- Selecciona un Estudiante --
                             each estudiante in estudiantes
-                                option(value=estudiante.id selected=(inscripcion && estudiante.id == inscripcion.estudiante_id))= estudiante.nombre
+                                option(value=estudiante.id selected=(inscripcion && estudiante.id == inscripcion.estudiante_id))= estudiante.nombre + ' ' + estudiante.apellido
 
                     div
                         label.block.text-sm.uppercase.text-gray-500.mb-3.font-bold(for="curso") Curso

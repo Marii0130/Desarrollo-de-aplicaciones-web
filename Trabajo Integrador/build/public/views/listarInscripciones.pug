@@ -27,7 +27,7 @@ block contenido
                 each inscripcion in inscripciones
                     tr
                         td.px-6.py-4= inscripcion.curso.nombre 
-                        td.px-6.py-4= inscripcion.estudiante.nombre
+                        td.px-6.py-4= inscripcion.estudiante.nombre + ' ' + inscripcion.estudiante.apellido
                         td.px-6.py-4
                             if inscripcion.nota === 0 || inscripcion.nota === '0'
                                 | Sin calificar
