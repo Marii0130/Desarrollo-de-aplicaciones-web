@@ -28,12 +28,15 @@ const validar = () => [
     (0, express_validator_1.check)('email')
         .notEmpty().withMessage('El email es un campo obligatorio')
         .isEmail().withMessage('Debe proporcionar un correo electrónico válido'),
+    // Middleware para manejar los errores
     (req, res, next) => {
         const errores = (0, express_validator_1.validationResult)(req);
         if (!errores.isEmpty()) {
-            return res.render('creaEstudiantes', {
+            // Renderiza la vista con los errores
+            return res.render('crearEstudiante', {
                 pagina: 'Crear Estudiante',
-                errores: errores.array()
+                errores: errores.array(), // Pasar los errores a la vista
+                estudiante: req.body // Pasar los datos ingresados para que se mantengan en el formulario
             });
         }
         next();
@@ -87,29 +90,27 @@ const insertar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!errores.isEmpty()) {
         return res.render('crearEstudiante', {
             pagina: 'Crear Estudiante',
-            errores: errores.array()
+            errores: errores.array(),
         });
     }
     const { dni, nombre, apellido, email } = req.body;
     try {
-        yield conexion_1.AppDataSource.transaction((transactionalEntityManager) => __awaiter(void 0, void 0, void 0, function* () {
-            const estudianteRepository = transactionalEntityManager.getRepository(EstudianteModel_1.Estudiante);
-            const existeEstudiante = yield estudianteRepository.findOne({
-                where: [
-                    { dni },
-                    { email }
-                ]
+        // Verificar si ya existe un estudiante con el mismo DNI
+        const estudianteRepository = conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante);
+        const estudianteExistente = yield estudianteRepository.findOne({ where: { dni } });
+        if (estudianteExistente) {
+            return res.render('crearEstudiante', {
+                pagina: 'Crear Estudiante',
+                errores: [{ msg: 'El DNI ya está registrado en el sistema' }], // Mensaje de error personalizado
             });
-            if (existeEstudiante) {
-                throw new Error('El estudiante ya existe.');
-            }
-            const nuevoEstudiante = estudianteRepository.create({ dni, nombre, apellido, email });
-            yield estudianteRepository.save(nuevoEstudiante);
-        }));
-        const estudiantes = yield conexion_1.AppDataSource.getRepository(EstudianteModel_1.Estudiante).find();
+        }
+        // Crear nuevo estudiante si el DNI no está duplicado
+        const nuevoEstudiante = estudianteRepository.create({ dni, nombre, apellido, email });
+        yield estudianteRepository.save(nuevoEstudiante);
+        const estudiantes = yield estudianteRepository.find();
         res.render('listarEstudiantes', {
             pagina: 'Lista de Estudiantes',
-            estudiantes
+            estudiantes,
         });
     }
     catch (err) {

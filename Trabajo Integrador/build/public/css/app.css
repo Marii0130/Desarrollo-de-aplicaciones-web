@@ -200,3 +200,7 @@ form button:hover {
 form h2, form label {
   text-align: center; 
 }
+
+.err{
+  color: red;
+}
