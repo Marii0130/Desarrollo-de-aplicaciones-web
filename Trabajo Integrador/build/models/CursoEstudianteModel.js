@@ -25,7 +25,7 @@ __decorate([
     __metadata("design:type", Number)
 ], CursoEstudiante.prototype, "curso_id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'float', default: () => 0 }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", Number)
 ], CursoEstudiante.prototype, "nota", void 0);
 __decorate([

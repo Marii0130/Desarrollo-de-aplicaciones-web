@@ -1,13 +1,37 @@
-import express from 'express';
+import express from "express";
+import { insertar, eliminar, consultarTodos, modificar, actualizar } from '../controllers/inscripcionController';
+import { AppDataSource } from '../db/conexion'; // Asegúrate de ajustar la importación
+import { Estudiante } from '../models/EstudianteModel'; // Asegúrate de ajustar la importación
+import { Curso } from '../models/CursoModel'; // Asegúrate de ajustar la importación
+import { CursoEstudiante } from '../models/CursoEstudianteModel';
+
 const router = express.Router();
-import { calificar, cancelarInscripcion, consultarInscripciones, consultarxAlumno, consultarxCurso, inscribir } from '../controllers/inscripcionController';
 
-router.get('/',consultarInscripciones);
-router.get('/xAlumno/:id',consultarxAlumno);
-router.get('/xCurso/:id',consultarxCurso);
+// Ruta para crear inscripciones
+router.get('/crearInscripcion', async (req, res) => {
+    try {
+        const estudiantes = await AppDataSource.getRepository(Estudiante).find(); // Obtener la lista de estudiantes
+        const cursos = await AppDataSource.getRepository(Curso).find(); // Obtener la lista de cursos
 
-router.post('/',inscribir);
-router.put('/',calificar);
-router.delete('/:estudiante-id/:curso_id',cancelarInscripcion);
+        res.render('crearInscripcion', {
+            pagina: 'Crear Inscripción',
+            estudiantes, // Pasar estudiantes a la vista
+            cursos // Pasar cursos a la vista
+        });
+    } catch (error) {
+        console.error('Error al obtener estudiantes o cursos:', error);
+        res.status(500).send('Error al cargar la página de creación de inscripciones');
+    }
+});
+
+router.get('/listarInscripciones', consultarTodos);
+router.post('/crearInscripcion', insertar);
+router.delete('/:curso_id/:estudiante_id', eliminar);
+router.get('/modificarInscripcion/:curso_id/:estudiante_id', modificar);
+
+router.put('/:curso_id/:estudiante_id', (req, res, next) => {
+    console.log('Ruta PUT /inscripciones/:curso_id/:estudiante_id alcanzada');
+    next();  // Deja que el siguiente middleware (tu controlador) se ejecute
+}, actualizar);
 
 export default router;

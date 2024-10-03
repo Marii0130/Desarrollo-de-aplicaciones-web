@@ -7,7 +7,7 @@ export class CursoEstudiante{
 	estudiante_id:number;
 	@PrimaryColumn()
 	curso_id:number;
-	@Column({type:'float', default:()=>0})
+	@Column()
 	nota:number;
 	@Column({type:Date, default:()=>'CURRENT_DATE'})
 	fecha:Date;

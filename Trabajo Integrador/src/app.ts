@@ -6,6 +6,7 @@ import path from 'path';
 import estudianteRouter from'./routes/estudianteRouter';
 import profesorRouter from'./routes/profesorRouter';
 import cursoRouter from'./routes/cursoRouter';
+import inscripcionRouter from'./routes/inscripcionRouter';
 
 import methodOverride from 'method-override';
 
@@ -21,6 +22,11 @@ app.use(methodOverride('_method'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
+
 app.use(morgan('dev'));
 app.use(cors());
 
@@ -32,5 +38,6 @@ app.get('/',(req:Request,res:Response)=>{
 app.use('/estudiantes', estudianteRouter);
 app.use('/profesores', profesorRouter);
 app.use('/cursos', cursoRouter);
+app.use('/inscripciones', inscripcionRouter);
 
 export default app;
